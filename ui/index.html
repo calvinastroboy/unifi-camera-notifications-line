@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>UniFi → LINE · 設定精靈</title><link rel="stylesheet" href="/style.css"><script type="module" src="/app.js"></script></head>
+<body>
+<aside class="sidebar">
+ <a class="brand" href="#"><span class="brand-icon">↗</span><span>連線小幫手<small>UniFi → LINE</small></span></a>
+ <div class="nav-caption">設定你的圖片通知</div>
+ <nav aria-label="設定步驟">
+  <button class="nav-item active" data-step="0"><span class="step-number">1</span><span>準備帳號<small>先把需要的東西備齊</small></span></button>
+  <button class="nav-item" data-step="1"><span class="step-number">2</span><span>連接服務<small>貼上你的帳號資料</small></span></button>
+  <button class="nav-item" data-step="2"><span class="step-number">3</span><span>選擇攝影機<small>決定要收到什麼畫面</small></span></button>
+  <button class="nav-item" data-step="3"><span class="step-number">4</span><span>檢查與部署<small>讓通知在雲端運作</small></span></button>
+  <button class="nav-item" data-step="4"><span class="step-number">5</span><span>連接 LINE<small>告訴我們要傳給誰</small></span></button>
+  <button class="nav-item" data-step="5"><span class="step-number">6</span><span>測試與啟用<small>親眼確認通知收到</small></span></button>
+ </nav>
+ <div class="local-note"><span class="dot"></span>只在這台電腦上設定<p>完成部署後，可以關閉電腦。<br>通知會繼續在雲端運作。</p></div>
+</aside>
+<div class="workspace">
+ <header><span class="header-label">通知設定工作台</span><div class="header-right"><span id="save-state" class="pill">尚未設定</span><span class="version">LOCAL · 1.2</span></div></header>
+ <main>
+  <div class="page-heading"><div><p class="eyebrow" id="step-label">STEP 01 / 06</p><h1 id="page-title">讓每一次通知，都有畫面。</h1><p id="page-subtitle">不用打指令。跟著六個步驟，把攝影機畫面送到你的 LINE。</p></div><span class="heading-symbol" aria-hidden="true">↗</span></div>
+  <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+  <section data-panel="0">
+   <div class="flow-card"><div class="flow-node"><span class="service-mark unifi">U</span><strong>UniFi Protect</strong><small>偵測事件・取得畫面</small></div><span class="flow-arrow">→</span><div class="flow-node"><span class="service-mark cloud">☁</span><strong>Cloudflare</strong><small>自動處理・暫存圖片</small></div><span class="flow-arrow">→</span><div class="flow-node"><span class="service-mark line">L</span><strong>LINE</strong><small>收到文字與相機截圖</small></div></div>
+   <div class="section-title"><h2>先準備這三個帳號</h2><span>註冊與登入由你自己完成</span></div>
+   <div class="account-grid">
+    <article class="card account-card"><span class="tag">01 / 攝影機</span><h3>UniFi</h3><p>使用能管理現場主機的帳號，準備主機 ID 和 API key。</p><a href="https://unifi.ui.com/" target="_blank" rel="noreferrer">開啟 UniFi <span>↗</span></a></article>
+    <article class="card account-card"><span class="tag">02 / 雲端服務</span><h3>Cloudflare</h3><p>準備帳戶 ID 和部署權杖，並開通 R2 與 workers.dev。</p><a href="https://dash.cloudflare.com/" target="_blank" rel="noreferrer">開啟 Cloudflare <span>↗</span></a></article>
+    <article class="card account-card"><span class="tag">03 / 通知接收</span><h3>LINE</h3><p>官方帳號需啟用 Messaging API，準備 token 和 secret。</p><a href="https://developers.line.biz/console/" target="_blank" rel="noreferrer">開啟 LINE Developers <span>↗</span></a></article>
+   </div>
+   <div class="tip"><span>ⓘ</span><p>已經設定過？我們會保留原本資料。金鑰不會在頁面重新顯示，也不會放進分享包。<br>服務可能有免費額度上限；這個工具不會替你購買方案。</p></div>
+   <div class="footer-actions"><span>準備好了就開始，資料可以逐項填寫。</span><button class="primary" data-step="1">開始設定 <span>→</span></button></div>
+  </section>
+
+  <section data-panel="1" hidden>
+   <form id="settings-form">
+    <div class="card form-card"><div class="card-heading"><span class="service-mark cloud small">☁</span><div><h2>Cloudflare</h2><p>用來建立雲端通知服務</p></div><a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noreferrer">取得權杖 ↗</a></div>
+     <label>帳戶 ID <input name="accountId" required pattern="[a-fA-F0-9]{32}" maxlength="32" placeholder="32 位英數字，不是 API token" autocomplete="off"><small>Cloudflare 帳戶網址中，dash.cloudflare.com/ 後方的 32 位字元。</small></label>
+     <label>部署權杖 <input name="CLOUDFLARE_API_TOKEN" type="password" autocomplete="new-password" placeholder="貼上 Cloudflare API token"><small class="secret-hint" data-secret="CLOUDFLARE_API_TOKEN"></small></label>
+     <details><summary>不知道權限要選哪幾個？</summary><p>指定這個客戶的帳戶，加入以下「帳戶／編輯」權限：</p><ul><li>Workers 指令碼（Workers Scripts）</li><li>Workers KV 儲存空間（Workers KV Storage）</li><li>Workers R2 儲存空間（Workers R2 Storage）</li></ul><p>不要選成「Workers 代理程式設定」。另外需要在帳戶內開通 R2 與 workers.dev；條款與付款設定由你自行確認。</p></details>
+    </div>
+    <div class="card form-card"><div class="card-heading"><span class="service-mark unifi small">U</span><div><h2>UniFi Protect</h2><p>用來讀取你選擇的攝影機</p></div><a href="https://unifi.ui.com/" target="_blank" rel="noreferrer">開啟管理頁 ↗</a></div>
+     <label>主機 ID <input name="consoleId" required pattern="[a-zA-Z0-9:_\-]+" placeholder="貼上 Console ID，不是 IP 位址" autocomplete="off"><small>進入主機的 Protect，複製網址 /consoles/ 後、下一個 / 之前的完整 ID。</small></label>
+     <label>API key <input name="UNIFI_API_KEY" type="password" autocomplete="new-password" placeholder="貼上 UniFi API key"><small class="secret-hint" data-secret="UNIFI_API_KEY"></small><small>由有權限的擁有者建立，需能存取這台主機的 Protect。</small></label>
+    </div>
+    <div class="card form-card"><div class="card-heading"><span class="service-mark line small">L</span><div><h2>LINE Messaging API</h2><p>用來發送通知及連接收件人</p></div><a href="https://developers.line.biz/console/" target="_blank" rel="noreferrer">取得資料 ↗</a></div>
+     <label>Channel access token <input name="LINE_CHANNEL_ACCESS_TOKEN" type="password" autocomplete="new-password" placeholder="Messaging API → Channel access token"><small class="secret-hint" data-secret="LINE_CHANNEL_ACCESS_TOKEN"></small></label>
+     <label>Channel secret <input name="LINE_CHANNEL_SECRET" type="password" autocomplete="new-password" placeholder="Basic settings → Channel secret"><small class="secret-hint" data-secret="LINE_CHANNEL_SECRET"></small><small>這與上面的 token 不同。一般使用者需要此欄位，才能用配對碼連接 LINE。</small></label>
+    </div>
+    <div class="footer-actions"><span>資料只會儲存在這份套件的私密資料夾。</span><button type="submit" class="primary mutation">儲存並選擇相機 →</button></div>
+   </form>
+  </section>
+
+  <section data-panel="2" hidden>
+   <div class="card form-card"><div class="section-title"><div><h2>要傳送哪些畫面？</h2><p>最多選 4 台。排列順序就是 LINE 收圖的順序。</p></div><button class="secondary mutation" id="discover">讀取攝影機</button></div><div id="camera-list" class="camera-list"><p class="empty">先按「讀取攝影機」，或在下方手動填入。</p></div>
+    <div id="selected-cameras" class="selected-cameras"></div>
+    <details><summary>無法讀取清單？手動輸入攝影機 ID</summary><label>攝影機 ID<input id="manual-cameras" placeholder="多台請用英文逗號分隔"><small>最多 4 台，可在 UniFi Protect 的裝置資料中取得。</small></label><button class="secondary" id="apply-manual">使用這些相機</button></details>
+   </div>
+   <form id="camera-form" class="card form-card"><h2>調整通知</h2><label>通知文字<input id="alarm-label" required maxlength="1000" placeholder="例如：🚪 展廳有人來了"></label><label>事件發生後，等待幾秒截圖？<div class="range-row"><input type="range" id="delay" min="0" max="10" value="5"><output id="delay-value" for="delay">5 秒</output></div><small>可選 0–10 秒。可以先用 5 秒，再依現場行走速度調整。</small></label><div class="footer-actions"><button type="button" class="text-button" data-step="1">← 上一步</button><button class="primary mutation" type="submit">儲存並繼續 →</button></div></form>
+  </section>
+
+  <section data-panel="3" hidden>
+   <div class="card form-card"><div class="section-title"><div><h2>確認這次部署的位置</h2><p>只處理下方帳戶，不會改動其他客戶。</p></div><span class="pill">Cloudflare</span></div><dl class="deployment-summary"><div><dt>帳戶 ID</dt><dd id="target-account">尚未設定</dd></div><div><dt>服務名稱</dt><dd id="target-name">尚未設定</dd></div><div><dt>選擇相機</dt><dd id="target-cameras">0 台</dd></div><div><dt>截圖延遲</dt><dd id="target-delay">5 秒</dd></div></dl>
+    <div class="tip"><span>ⓘ</span><p>部署會建立或更新這份套件的 Worker、KV 與 R2 設定。既有客戶不會自動換綁 LINE。</p></div>
+    <div class="button-row"><button class="secondary mutation" data-action="doctor">先檢查連線</button><button class="primary mutation" data-action="deploy">部署至 Cloudflare ↗</button></div>
+   </div><div class="footer-actions"><button class="text-button" data-step="2">← 上一步</button><button class="secondary" data-step="4">下一步：連接 LINE →</button></div>
+  </section>
+
+  <section data-panel="4" hidden>
+   <div class="card form-card"><div class="card-heading"><span class="service-mark line">L</span><div><h2>把通知送到你的 LINE</h2><p id="pair-status">開始前，請先完成雲端部署。</p></div></div>
+    <div class="button-row"><button class="primary mutation" data-action="pair">開始配對</button><button class="secondary" id="pair-refresh">檢查連接狀態</button></div>
+    <div id="pair-details" hidden><ol class="instructions"><li><strong>設定 LINE 的 Webhook</strong><p>將下方網址貼到 LINE Developers → Messaging API → Webhook URL，開啟 Use webhook，再按 Verify。</p><div class="copy-row"><input id="line-url" readonly aria-label="LINE Webhook URL"><button class="secondary" data-copy="line-url">複製</button></div></li><li><strong>用 LINE 傳送配對碼</strong><p>先加入機器人好友，再用私人對話傳送下方整段文字。Verify 成功不代表已完成配對。</p><div class="copy-row"><input id="pair-code" readonly aria-label="LINE 配對碼"><button class="secondary" data-copy="pair-code">複製</button></div><small id="pair-expiry"></small></li><li><strong>等這個畫面顯示「LINE 已連接」</strong><p>這裡會自動檢查。配對碼 15 分鐘有效，過期請重新按「開始配對」。</p></li></ol></div>
+   </div><div class="footer-actions"><button class="text-button" data-step="3">← 上一步</button><button class="secondary" data-step="5">下一步：測試通知 →</button></div>
+  </section>
+
+  <section data-panel="5" hidden>
+   <div class="card form-card"><div class="section-title"><div><h2>先傳一則通知看看</h2><p>會傳送通知文字與所選相機的圖片，使用 LINE 訊息額度。</p></div><button class="primary mutation" data-action="test">發送測試 ↗</button></div><div id="test-result" class="result-box">尚未在本機介面執行測試。</div><label class="check-label"><input type="checkbox" id="phone-confirm">我已在手機確認：文字和每一張圖片都有收到</label></div>
+   <div class="card form-card"><div class="section-title"><div><h2>最後，讓 UniFi 觸發通知</h2><p>不一定要門磁。也可以使用相機支援的人員、動作或越線偵測。</p></div><button class="secondary" id="show-webhooks">取得 Webhook</button></div>
+    <div id="unifi-details" hidden><label>UniFi Alarm 的 Webhook URL<div class="copy-row"><input id="unifi-url" readonly aria-label="UniFi Webhook URL"><button class="secondary" data-copy="unifi-url">複製</button></div><small>含驗證金鑰，請勿公開或分享截圖。</small></label></div>
+    <ol class="instructions compact"><li>開啟 UniFi Protect → Alarm Manager，選擇事件和來源。</li><li>新增 Webhook 動作，方法選 <strong>POST</strong>，貼上完整網址。</li><li>儲存後重新打開，確認規則已啟用、方法與網址仍正確。</li><li>實際開門或走入偵測範圍，確認手機收到畫面。</li></ol>
+    <div class="tip"><span>ⓘ</span><p>Test Alarm 重複測試請至少間隔 60 秒。測試成功不代表現場規則已生效，還需要實際觸發一次。</p></div>
+    <label class="check-label"><input type="checkbox" id="real-confirm">實際觸發後，手機也收到正確的圖片</label>
+   </div>
+   <div class="card form-card"><div class="section-title"><h2>目前狀態</h2><button class="secondary" id="status-refresh">重新檢查</button></div><pre id="status-result" class="status-text">按「重新檢查」讀取雲端狀態。</pre><p class="muted">手機勾選是本次人工確認，不代表系統自動驗證，也不會保存至雲端。</p></div>
+  </section>
+
+  <section id="job-panel" class="job-panel" hidden aria-live="polite"><div class="section-title"><div><span class="eyebrow">執行進度</span><h2 id="job-title">處理中</h2></div><span id="job-state" class="pill">進行中</span></div><p id="job-time" class="muted"></p><pre id="job-log"></pre><p id="job-next" class="job-next"></p></section>
+  <footer class="page-footer"><span>UniFi → LINE Kit</span><span>設定留在本機，通知在雲端。</span></footer>
+ </main>
+</div>
+</body></html>

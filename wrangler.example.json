@@ -1,0 +1,6 @@
+{
+  "name": "door-alert-validation",
+  "main": "src/worker.mjs",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": true
+}

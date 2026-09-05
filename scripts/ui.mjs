@@ -1,0 +1,12 @@
+import {dirname,resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {spawn} from 'node:child_process';
+import {startServer} from './ui-server.mjs';
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const {origin,token}=await startServer({root});
+const url=origin+'/#'+token;
+console.log('UniFi → LINE 設定精靈已啟動。關閉此終端會停止本機介面，不影響雲端通知。');
+console.log('若瀏覽器未開啟，請複製以下本機網址（勿分享）：\n'+url);
+const command=process.platform==='darwin'?'open':process.platform==='win32'?'rundll32.exe':'xdg-open';
+const args=process.platform==='win32'?['url.dll,FileProtocolHandler',url]:[url];
+spawn(command,args,{shell:false,stdio:'ignore'}).on('error',()=>console.log('請手動開啟上述網址。'));

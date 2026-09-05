@@ -1,0 +1,1 @@
+此套件不含客戶設定。先安裝 Node.js 22+；Mac 雙擊 Start.command，Windows 雙擊 Start.cmd，即可開啟網頁精靈。也可執行 npm ci 及 npm run ui。只分享本 ZIP，不要分享已設定的工作資料夾。
